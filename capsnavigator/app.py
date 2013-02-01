@@ -10,9 +10,7 @@ _ = wx.GetTranslation
 
 class App(wx.App):
     def OnInit(self): 
-        spash_screen = MySplashScreen(None)
-        spash_screen.Show()
-        spash_screen.Refresh()
+        MySplashScreen(None)
                   
         self.frame = MainFrame(None, title=_("Caps Navigator"))
         self.SetTopWindow(self.frame)        
