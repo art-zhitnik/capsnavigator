@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import wx
+import sys
 
 from menues import MainMenu
 
@@ -14,13 +15,32 @@ class MainFrame(wx.Frame):
         MainMenu(self)             
         
         self.panel.BackgroundColour = wx.GREEN
-        self.__DoLayout()               
+        self.__DoLayout()
+        
+        self.Bind(wx.EVT_MENU, self.OnAbout, id=wx.ID_ABOUT)    
+        
+    def OnAbout(self, event):
+        info = wx.AboutDialogInfo()
+        desc = ["\n{0}\n".format(_("A program for collectors!")),
+                "{0}: (%s, %s)".format(_("Platform Info")),
+                "{0}: {1}".format(_("License"), _("Public Domain"))]
+        desc = "\n".join(desc)
+        py_version = [sys.platform, ", python ", sys.version.split()[0]]
+        py_version = "".join(py_version)
+        platform = list(wx.PlatformInfo[1:])
+        platform[0] += (" " + wx.VERSION_STRING)
+        wx_info = ", ".join(platform)
+        info.SetName(_("Caps Navigator"))
+        info.SetVersion("4.0.0")
+        info.SetCopyright("{0} (C) {1}".format(_("Copyright"), _("Art Zhitnik")))
+        info.SetDescription(desc % (py_version, wx_info))
+        wx.AboutBox(info)
         
     def __DoLayout(self):
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         hsizer.AddSpacer(200)
         hsizer.Add(self.panel, 1, wx.EXPAND) 
-        self.SetSizer(hsizer)       
+        self.SetSizer(hsizer)    
     
 if __name__ == "__main__":
     class TestApp(wx.App):
