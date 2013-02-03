@@ -4,6 +4,7 @@ import wx
 import sys
 
 from menues import MainMenu
+from preferences.frames import PreferencesDialog
 
 _ = wx.GetTranslation
 
@@ -17,6 +18,7 @@ class MainFrame(wx.Frame):
         self.panel.BackgroundColour = wx.GREEN
         self.__DoLayout()
         
+        self.Bind(wx.EVT_MENU, self.OnPreferences, id=wx.ID_PREFERENCES)  
         self.Bind(wx.EVT_MENU, self.OnAbout, id=wx.ID_ABOUT)    
         
     def OnAbout(self, event):
@@ -35,6 +37,10 @@ class MainFrame(wx.Frame):
         info.SetCopyright("{0} (C) {1}".format(_("Copyright"), _("Art Zhitnik")))
         info.SetDescription(desc % (py_version, wx_info))
         wx.AboutBox(info)
+        
+    def OnPreferences(self, event):
+        preferences = PreferencesDialog(None)
+        preferences.ShowModal()
         
     def __DoLayout(self):
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
