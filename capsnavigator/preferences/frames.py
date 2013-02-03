@@ -5,6 +5,8 @@ import wx.lib.scrolledpanel as scrolled
 import wx.lib.langlistctrl as langlist
 from wx.lib.art import flagart
 from wx.combo import BitmapComboBox 
+import configobj
+import os
 
 from resources import logo
 
@@ -15,7 +17,13 @@ class PreferencesDialog(wx.Dialog):
         size = (500,400)
         wx.Dialog.__init__(self, parent, wx.ID_ANY, _("Preferences"), size=size, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)        
         self.SetMinSize(size)
-        self.SetMaxSize((1000,720))  
+        self.SetMaxSize((1000,720))
+        self.modified = False 
+        config_path = wx.StandardPaths_Get().GetUserDataDir()
+        self.config = configobj.ConfigObj(os.path.join(config_path, "config.ini"))
+        if not self.config.has_key("preferences"):
+            self.config["preferences"] = {}
+            self.modified = True
         self.__MakeControls()
         self.__EventHandlers()
         self.__DoLayout()
@@ -23,10 +31,13 @@ class PreferencesDialog(wx.Dialog):
     def __MakeControls(self):
         self.pages = Pages(self)
         self.save_btn = wx.Button(self, wx.ID_OK, label=_("Save")) 
-        self.cancel_btn = wx.Button(self, wx.ID_CANCEL)    
-        
+        self.cancel_btn = wx.Button(self, wx.ID_CANCEL)            
+         
     def __EventHandlers(self):
-        self.save_btn.Bind(wx.EVT_BUTTON, self.OnSave)     
+        self.save_btn.Bind(wx.EVT_BUTTON, self.OnSave)
+        self.cancel_btn.Bind(wx.EVT_BUTTON, self.OnClose)
+        self.Bind(wx.EVT_TEXT, self.OnChange) 
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
         
     def __DoLayout(self):
         btnsizer = wx.StdDialogButtonSizer()
@@ -39,25 +50,44 @@ class PreferencesDialog(wx.Dialog):
         self.SetSizer(msizer)
         
     def OnSave(self, event):
+        self.config.write()
+        self.EndModal(0) 
         
-        self.EndModal(0)        
+    def OnClose(self, event):
+        if self.modified and wx.MessageBox(_("Are you sure you want to exit preferences without saving?"), style=wx.CENTER | wx.ICON_WARNING | wx.OK | wx.CANCEL | wx.CANCEL_DEFAULT) == wx.CANCEL:
+            if isinstance(event.EventObject, wx.Dialog):
+                event.Veto()
+        else:
+            self.modified = False
+            event.Skip()
+        
+    def OnChange(self, event):
+        param = event.EventObject.GetName()
+        section = event.EventObject.Parent.GetName()
+        value = event.EventObject.GetValue()
+        self.config["preferences"][section][param] = value
+        self.modified = True
+        event.Skip()
 
 class Pages(wx.Notebook):
     def __init__(self, parent):
-        super(Pages, self).__init__(parent)
-        
-        self.panel_preferences = PanelMainPreferences(self)        
+        super(Pages, self).__init__(parent)        
+        self.panel_preferences = PanelMainPreferences(self, name="main")
         self.AddPage(self.panel_preferences, _("Main preferences"))
         
 class PanelMainPreferences(scrolled.ScrolledPanel):
-    def __init__(self, parent):
-        super(PanelMainPreferences, self).__init__(parent)
+    def __init__(self, parent, name):
+        super(PanelMainPreferences, self).__init__(parent, name=name)
+        preferences = self.GrandParent.config["preferences"]
+        if not preferences.has_key(name):
+            preferences[name] = {}
+        self.cfg = preferences[name]
         self.__MakeControls()
         self.__DoLayout()
         
     def __MakeControls(self):
-        self.language_lbl = wx.StaticText(self, label="{0}:".format(_("Language")))
-        self.language = LangCombo(self, 'en_GB')
+        self.language_lbl = wx.StaticText(self, label="{0}:".format(_("Language")))        
+        self.language = LangCombo(self, "language", self.cfg.get("language", ""))
     
     def __DoLayout(self):
         sizer = wx.FlexGridSizer(cols=2, vgap=8, hgap=8)
@@ -75,8 +105,8 @@ class LangCombo(BitmapComboBox):
              u"English": wx.LANGUAGE_ENGLISH,
              u"Русский": wx.LANGUAGE_RUSSIAN}
     
-    def __init__(self, parent, value=""):
-        super(LangCombo, self).__init__(parent)
+    def __init__(self, parent, name, value=""):
+        super(LangCombo, self).__init__(parent, name=name)
                 
         self.reverse_lookup = {}
         for lang_label, lang in LangCombo.langs.iteritems():
@@ -102,8 +132,8 @@ class LangCombo(BitmapComboBox):
         
     def GetValue(self):
         if LangCombo.langs.has_key(self.Value):
-            if LangCombo[self.Value] != wx.LANGUAGE_DEFAULT:
-                lanf_info = wx.Locale.GetLanguageInfo(LangCombo[self.Value])
+            if LangCombo.langs[self.Value] != wx.LANGUAGE_DEFAULT:
+                lanf_info = wx.Locale.GetLanguageInfo(LangCombo.langs[self.Value])
                 return lanf_info.CanonicalName
         return ""            
     

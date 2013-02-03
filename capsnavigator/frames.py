@@ -39,7 +39,8 @@ class MainFrame(wx.Frame):
         wx.AboutBox(info)
         
     def OnPreferences(self, event):
-        preferences = PreferencesDialog(None)
+        preferences = PreferencesDialog(self)
+        preferences.CenterOnParent() 
         preferences.ShowModal()
         
     def __DoLayout(self):
