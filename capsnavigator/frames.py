@@ -12,15 +12,13 @@ class MainFrame(wx.Frame):
     def __init__(self, parent, id=wx.ID_ANY, title="", pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.DEFAULT_FRAME_STYLE, name='MainFrame'):
         super(MainFrame, self).__init__(parent, id, title, pos, size, style, name)
         
+        self.SetMinSize((800, 600))
         self.panel = wx.Panel(self)        
-        MainMenu(self)             
+        MainMenu(self)
         
-        self.panel.BackgroundColour = wx.GREEN
+        self.panel.BackgroundColour = wx.LIGHT_GREY
         self.__DoLayout()
-        
-        self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
-        self.Bind(wx.EVT_MENU, self.OnPreferences, id=wx.ID_PREFERENCES)  
-        self.Bind(wx.EVT_MENU, self.OnAbout, id=wx.ID_ABOUT)        
+        self.__EventHandlers()
         
     def OnExit(self, event):
         self.Close()
@@ -45,7 +43,12 @@ class MainFrame(wx.Frame):
     def OnPreferences(self, event):
         preferences = PreferencesDialog(self)
         preferences.CenterOnParent() 
-        preferences.ShowModal()
+        preferences.ShowModal()        
+        
+    def __EventHandlers(self):
+        self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
+        self.Bind(wx.EVT_MENU, self.OnPreferences, id=wx.ID_PREFERENCES)  
+        self.Bind(wx.EVT_MENU, self.OnAbout, id=wx.ID_ABOUT) 
         
     def __DoLayout(self):
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
