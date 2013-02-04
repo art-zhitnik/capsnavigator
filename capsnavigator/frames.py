@@ -9,7 +9,7 @@ from preferences.frames import PreferencesDialog
 _ = wx.GetTranslation
 
 class MainFrame(wx.Frame):
-    def __init__(self, parent, id=wx.ID_ANY, title="", pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.DEFAULT_FRAME_STYLE, name="MainFrame"):
+    def __init__(self, parent, id=wx.ID_ANY, title="", pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.DEFAULT_FRAME_STYLE, name='MainFrame'):
         super(MainFrame, self).__init__(parent, id, title, pos, size, style, name)
         
         self.panel = wx.Panel(self)        
@@ -49,7 +49,7 @@ class MainFrame(wx.Frame):
         hsizer.Add(self.panel, 1, wx.EXPAND) 
         self.SetSizer(hsizer)    
     
-if __name__ == "__main__":
+if __name__ == '__main__':
     class TestApp(wx.App):
         def OnInit(self):
             self.frame = MainFrame(None)

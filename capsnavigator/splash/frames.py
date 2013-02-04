@@ -15,9 +15,9 @@ class MySplashScreen(wx.SplashScreen):
         self.text.Font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_BOLD)
         rect = self.GetClientRect()
         self.SetSize((rect.width, rect.height + self.text.Size[1]))
-        self.text.SetPosition(((rect.width-self.text.Size.width)/2, rect.height))        
+        self.text.SetPosition(((rect.width - self.text.Size.width) / 2, rect.height))        
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     class TestApp(wx.App):
         def OnInit(self):
             self.frame = MySplashScreen(None)

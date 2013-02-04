@@ -2,27 +2,24 @@
 
 import wx
 import wx.lib.scrolledpanel as scrolled
-import wx.lib.langlistctrl as langlist
 from wx.lib.art import flagart
 from wx.combo import BitmapComboBox 
 import configobj
 import os
 
-from resources import logo
-
 _ = wx.GetTranslation
 
 class PreferencesDialog(wx.Dialog):
     def __init__(self, parent):
-        size = (500,400)
+        size = (500, 400)
         wx.Dialog.__init__(self, parent, wx.ID_ANY, _("Preferences"), size=size, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)        
         self.SetMinSize(size)
-        self.SetMaxSize((1000,720))
+        self.SetMaxSize((1000, 720))
         self.modified = False 
         config_path = wx.StandardPaths_Get().GetUserDataDir()
-        self.config = configobj.ConfigObj(os.path.join(config_path, "config.ini"))
-        if not self.config.has_key("preferences"):
-            self.config["preferences"] = {}
+        self.config = configobj.ConfigObj(os.path.join(config_path, 'config.ini'))
+        if not self.config.has_key('preferences'):
+            self.config['preferences'] = {}
             self.modified = True
         self.__MakeControls()
         self.__EventHandlers()
@@ -65,20 +62,20 @@ class PreferencesDialog(wx.Dialog):
         param = event.EventObject.GetName()
         section = event.EventObject.Parent.GetName()
         value = event.EventObject.GetValue()
-        self.config["preferences"][section][param] = value
+        self.config['preferences'][section][param] = value
         self.modified = True
         event.Skip()
 
 class Pages(wx.Notebook):
     def __init__(self, parent):
         super(Pages, self).__init__(parent)        
-        self.panel_preferences = PanelMainPreferences(self, name="main")
+        self.panel_preferences = PanelMainPreferences(self, name='main')
         self.AddPage(self.panel_preferences, _("Main preferences"))
         
 class PanelMainPreferences(scrolled.ScrolledPanel):
     def __init__(self, parent, name):
         super(PanelMainPreferences, self).__init__(parent, name=name)
-        preferences = self.GrandParent.config["preferences"]
+        preferences = self.GrandParent.config['preferences']
         if not preferences.has_key(name):
             preferences[name] = {}
         self.cfg = preferences[name]
@@ -87,7 +84,7 @@ class PanelMainPreferences(scrolled.ScrolledPanel):
         
     def __MakeControls(self):
         self.language_lbl = wx.StaticText(self, label="{0}:".format(_("Language")))        
-        self.language = LangCombo(self, "language", self.cfg.get("language", ""))
+        self.language = LangCombo(self, 'language', self.cfg.get('language', ''))
     
     def __DoLayout(self):
         sizer = wx.FlexGridSizer(cols=2, vgap=8, hgap=8)
@@ -115,17 +112,17 @@ class LangCombo(BitmapComboBox):
             if lang_label:
                 bmp = flagart.catalog[cnt].getBitmap()
             else:
-                bmp = flagart.catalog["BLANK"].getBitmap()
+                bmp = flagart.catalog['BLANK'].getBitmap()
             self.Append(lang_label, bmp)
             if lang == wx.LANGUAGE_DEFAULT:
-                reverse_index = ""
+                reverse_index = ''
             else:
                 reverse_index = lanf_info.CanonicalName
             self.reverse_lookup[reverse_index] = lang_label
         self.SetValue(value)
         
     def SetValue(self, value):
-        new_value = ""
+        new_value = ''
         if self.reverse_lookup.has_key(value):
             new_value = self.reverse_lookup[value]            
         super(LangCombo, self).SetValue(new_value)
@@ -135,9 +132,9 @@ class LangCombo(BitmapComboBox):
             if LangCombo.langs[self.Value] != wx.LANGUAGE_DEFAULT:
                 lanf_info = wx.Locale.GetLanguageInfo(LangCombo.langs[self.Value])
                 return lanf_info.CanonicalName
-        return ""            
+        return ''            
     
-if __name__ == "__main__":
+if __name__ == '__main__':
     class TestApp(wx.App):
         def OnInit(self):
             self.frame = PreferencesDialog(None)
