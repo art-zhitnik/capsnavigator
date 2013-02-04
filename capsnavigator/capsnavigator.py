@@ -37,7 +37,11 @@ class App(wx.App):
                 if lanf_info.CanonicalName == canonical_name:           
                     current_lang = lang
                     break
-        self.locale = wx.Locale(current_lang)
+        self.locale = wx.Locale(current_lang)        
+        path = os.path.abspath('./locale') + os.path.sep
+        self.locale.AddCatalogLookupPathPrefix(path)
+        self.locale.AddCatalog('messages')
+        settings.LANGS[_("Default")] = settings.LANGS.pop("Default")
 
 if __name__ == '__main__':
     app = App(False)         

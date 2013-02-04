@@ -1,0 +1,59 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-02-04 15:30+1000\n"
+"PO-Revision-Date: 2013-02-04 15:44+1000\n"
+"Last-Translator: Art Zhitnik <art.zhitnik@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.4\n"
+
+msgid "Caps Navigator"
+msgstr "Caps Navigator"
+
+msgid "A program for collectors!"
+msgstr "Программа для коллекционеров!"
+
+msgid "Platform Info"
+msgstr "Платформа"
+
+msgid "License"
+msgstr "Лицензия"
+
+msgid "Copyright"
+msgstr "Авторские права"
+
+msgid "Art Zhitnik"
+msgstr "Артём Житник"
+
+msgid "Edit"
+msgstr "Правка"
+
+msgid "Help"
+msgstr "Помощь"
+
+msgid "Default"
+msgstr "По умолчанию"
+
+msgid "Preferences"
+msgstr "Настройки"
+
+msgid "Save"
+msgstr "Сохранить"
+
+msgid "Are you sure you want to exit preferences without saving?"
+msgstr "Вы действительно хотите выйти без сохранения введенных данных?"
+
+msgid "Main preferences"
+msgstr "Основные настройки"
+
+msgid "Language"
+msgstr "Язык"

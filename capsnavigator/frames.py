@@ -25,7 +25,7 @@ class MainFrame(wx.Frame):
         info = wx.AboutDialogInfo()
         desc = ["\n{0}\n".format(_("A program for collectors!")),
                 "{0}: (%s, %s)".format(_("Platform Info")),
-                "{0}: {1}".format(_("License"), _("Public Domain"))]
+                "{0}: {1}".format(_("License"), "LGPL")]
         desc = "\n".join(desc)
         py_version = [sys.platform, ", python ", sys.version.split()[0]]
         py_version = "".join(py_version)
