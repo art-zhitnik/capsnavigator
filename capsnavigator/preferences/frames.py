@@ -6,6 +6,11 @@ from wx.lib.art import flagart
 from wx.combo import BitmapComboBox 
 import configobj
 import os
+    
+if __name__ == '__main__':
+    import capsnavigator.settings as settings
+else:
+    import settings
 
 _ = wx.GetTranslation
 
@@ -98,15 +103,11 @@ class LangCombo(BitmapComboBox):
     Combobox with available translations and flags
     """
     
-    langs = {_("Default"): wx.LANGUAGE_DEFAULT,
-             u"English": wx.LANGUAGE_ENGLISH,
-             u"Русский": wx.LANGUAGE_RUSSIAN}
-    
     def __init__(self, parent, name, value=""):
         super(LangCombo, self).__init__(parent, name=name)
                 
         self.reverse_lookup = {}
-        for lang_label, lang in LangCombo.langs.iteritems():
+        for lang_label, lang in settings.LANGS.iteritems():
             lanf_info = wx.Locale.GetLanguageInfo(lang)
             l, cnt = lanf_info.CanonicalName.split('_')            
             if lang_label:
@@ -128,9 +129,9 @@ class LangCombo(BitmapComboBox):
         super(LangCombo, self).SetValue(new_value)
         
     def GetValue(self):
-        if LangCombo.langs.has_key(self.Value):
-            if LangCombo.langs[self.Value] != wx.LANGUAGE_DEFAULT:
-                lanf_info = wx.Locale.GetLanguageInfo(LangCombo.langs[self.Value])
+        if settings.LANGS.has_key(self.Value):
+            if settings.LANGS[self.Value] != wx.LANGUAGE_DEFAULT:
+                lanf_info = wx.Locale.GetLanguageInfo(settings.LANGS[self.Value])
                 return lanf_info.CanonicalName
         return ''            
     
