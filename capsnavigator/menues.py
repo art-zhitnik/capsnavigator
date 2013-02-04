@@ -8,6 +8,10 @@ class MainMenu(wx.MenuBar):
     def __init__(self, parent, *args, **kwargs):
         super(MainMenu, self).__init__(*args, **kwargs)
         
+        self.filemenu = wx.Menu()
+        self.filemenu.Append(wx.ID_EXIT)
+        self.Append(self.filemenu, _("File")) 
+        
         self.editmenu = wx.Menu()
         self.editmenu.Append(wx.ID_PREFERENCES)
         self.Append(self.editmenu, _("Edit")) 

@@ -18,8 +18,12 @@ class MainFrame(wx.Frame):
         self.panel.BackgroundColour = wx.GREEN
         self.__DoLayout()
         
+        self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
         self.Bind(wx.EVT_MENU, self.OnPreferences, id=wx.ID_PREFERENCES)  
-        self.Bind(wx.EVT_MENU, self.OnAbout, id=wx.ID_ABOUT)    
+        self.Bind(wx.EVT_MENU, self.OnAbout, id=wx.ID_ABOUT)        
+        
+    def OnExit(self, event):
+        self.Close()
         
     def OnAbout(self, event):
         info = wx.AboutDialogInfo()
