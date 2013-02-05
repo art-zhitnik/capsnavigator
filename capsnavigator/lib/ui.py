@@ -31,19 +31,19 @@ class PersistentFrame(wx.Frame):
         
     def _OnResize(self, event):
         if hasattr(self, 'actual_size') and not self.IsMaximized():
-            self.actual_size = self.GetSize()
+            self.actual_size = self.GetSize().Get()
         event.Skip()
         
     def _OnMove(self, event):
         if hasattr(self, 'actual_position') and not self.IsMaximized():
-            self.actual_position = self.GetPosition()
+            self.actual_position = self.GetPosition().Get()
         event.Skip()
         
     def RestoreState(self):
         if not self.config.has_key('frames'):
             self.config['frames'] = {}             
-        position = self.config['frames'].get('{0}_pos'.format(self.Name.lower()), repr(wx.DefaultPosition))
-        size = self.config['frames'].get('{0}_size'.format(self.Name.lower()), repr(wx.DefaultSize))
+        position = self.config['frames'].get('{0}_pos'.format(self.Name.lower()), repr(wx.DefaultPosition.Get()))
+        size = self.config['frames'].get('{0}_size'.format(self.Name.lower()), repr(wx.DefaultSize.Get()))
         maximized = self.config['frames'].get('{0}_maximized'.format(self.Name.lower()), repr(True))
         self.actual_position = eval(position)
         self.actual_size = eval(size)
