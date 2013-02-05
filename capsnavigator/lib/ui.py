@@ -26,7 +26,10 @@ class PersistentFrame(wx.Frame):
         self.config['frames']['{0}_pos'.format(self.Name.lower())] = repr(self.actual_position)
         self.config['frames']['{0}_size'.format(self.Name.lower())] = repr(self.actual_size)
         self.config['frames']['{0}_maximized'.format(self.Name.lower())] = repr(maximized)
-        self.config.write()
+        try:
+            self.config.write()
+        except IOError:
+            print "Can't save config!"
         event.Skip()
         
     def _OnResize(self, event):
