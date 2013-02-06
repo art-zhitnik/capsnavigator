@@ -131,7 +131,7 @@ class MainTree(HTL.HyperTreeList):
             self.SetItemImage(item, flag, which=wx.TreeItemIcon_Normal)
              
     def _OnResize(self, event):        
-        width = self.Parent.GetSize()[0]
+        width = self.Parent.GetSize()[0] - 3
         column0_new_width = width * 0.8
         column1_new_width = width * 0.2
         if column1_new_width != self.GetColumnWidth(0):
