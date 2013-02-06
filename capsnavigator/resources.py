@@ -1,10 +1,8 @@
-# ***************** Catalog starts here *******************
+# -*- coding: utf-8 -*-
 
-catalog = {}
-index = []
+from wx.lib.embeddedimage import PyEmbeddedImage
 
-#----------------------------------------------------------------------
-filter = PyEmbeddedImage(
+filter_icon = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AAFySURBVDiN7ZG9SgNBFIXPDFkUDJpCn0EUkzITX8HKRgWRIKIoWCj6ANknsJYg+AxptLFZ"
@@ -15,6 +13,3 @@ filter = PyEmbeddedImage(
     "iaQBgPbPAdBab95c3WzNzs3WXoIXjAyNgCSeg+e3VCl1bb1au1rrzS+raNnsOEqptemZ6UYQ"
     "BlQ7itnx7K1Saq1bb1cASdi2TZKEDSql+F3flyf8Jv4BfwBIfFfwfR+5XA4K6kfAO38GC7d4"
     "cV6KAAAAAElFTkSuQmCC")
-index.append('filter')
-catalog['filter'] = filter
-
