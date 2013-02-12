@@ -2,9 +2,11 @@
 
 import wx
 import wx.lib.agw.hypertreelist as HTL
+import  wx.grid as gridlib
 import sys
+from math import ceil
 
-from menues import MainMenu, MainTreeToolbar, ID_FILTER
+import menues
 from preferences.frames import PreferencesDialog
 from lib.ui import PersistentFrame
 
@@ -16,16 +18,24 @@ class MainFrame(PersistentFrame):
         
         self.SetMinSize((800, 600))
         self.navigation = NavigationPanel(self)
-        self.panel = wx.Panel(self)        
-        MainMenu(self)
-        
-        self.panel.BackgroundColour = wx.LIGHT_GREY
+        self.view_panel = ViewPanel(self, 100)        
+        menues.MainMenu(self)
+
         self.__DoLayout()
         self.__EventHandlers()
         
     def OnExit(self, event):
         self.Close()
         
+    def __OnResize(self, event):       
+        width = self.ClientSize[0] - self.navigation.MinWidth 
+        newcols = width / self.view_panel.item_size
+        if newcols != self.view_panel.gallery.cols_best_amount:
+            self.view_panel.gallery.cols_best_amount = newcols
+            self.view_panel.gallery.Reset()        
+        self.view_panel.WidthCorrection()
+        event.Skip()
+
     def OnAbout(self, event):
         info = wx.AboutDialogInfo()
         desc = ["\n{0}\n".format(_("A program for collectors!")),
@@ -52,22 +62,25 @@ class MainFrame(PersistentFrame):
         self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
         self.Bind(wx.EVT_MENU, self.OnPreferences, id=wx.ID_PREFERENCES)  
         self.Bind(wx.EVT_MENU, self.OnAbout, id=wx.ID_ABOUT) 
+        self.Bind(wx.EVT_SIZE, self.__OnResize)
         
     def __DoLayout(self):
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         hsizer.Add(self.navigation, 1, wx.EXPAND)
-        hsizer.Add(self.panel, 5, wx.EXPAND) 
+        hsizer.Add(self.view_panel, 0)        
         self.SetSizer(hsizer)
         
 class NavigationPanel(wx.Panel):
     def __init__(self, parent):
         super(NavigationPanel, self).__init__(parent)        
-               
+        
+        self.SetMinSize((200, 0))        
+        
         self.__MakeControls()
         self.__DoLayout()
         self.__EventHandlers()   
         
-    def _OnToolbarPushed(self, event): 
+    def __OnToolbarPushed(self, event): 
         if event.GetId() == ID_FILTER:                                  
             panelparent = self.tree.GetParent()
             panelsizer = panelparent.GetSizer()
@@ -83,7 +96,7 @@ class NavigationPanel(wx.Panel):
         event.Skip()
         
     def __MakeControls(self):
-        self.toolbar = MainTreeToolbar(self)
+        self.toolbar = menues.MainTreeToolbar(self)
         self.tree = MainTree(self)
     
     def __DoLayout(self):
@@ -94,7 +107,7 @@ class NavigationPanel(wx.Panel):
         self.SetSizer(hsizer)
         
     def __EventHandlers(self):
-        self.Bind(wx.EVT_TOOL, self._OnToolbarPushed)
+        self.Bind(wx.EVT_TOOL, self.__OnToolbarPushed)
         
 class MainTree(HTL.HyperTreeList):    
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.NO_BORDER,\
@@ -130,7 +143,7 @@ class MainTree(HTL.HyperTreeList):
         if flag is not None:            
             self.SetItemImage(item, flag, which=wx.TreeItemIcon_Normal)
              
-    def _OnResize(self, event):        
+    def __OnResize(self, event):        
         width = self.Parent.GetSize()[0] - 3
         column0_new_width = width * 0.8
         column1_new_width = width * 0.2
@@ -144,8 +157,170 @@ class MainTree(HTL.HyperTreeList):
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
 
     def __EventHandlers(self):
-        self.Bind(wx.EVT_SIZE, self._OnResize)
+        self.Bind(wx.EVT_SIZE, self.__OnResize)
         
+class ViewPanel(wx.Panel):
+    def __init__(self, parent, item_size):
+        super(ViewPanel, self).__init__(parent)        
+        
+        self.item_size = item_size
+                
+        self.__MakeControls()
+        self.__DoLayout()
+        self.__EventHandlers()         
+        
+    def WidthCorrection(self):
+        """
+            Correct panel width according to appearance of the vertical scroll bar of the gallery.
+            Dirty hack, but gallery.HasScrollbar() doesn't work.
+        """
+        _galleryrows_forecast = float(self.Parent.ClientSize[1] - self.toolbar.Size[1]) / self.item_size
+        if _galleryrows_forecast < self.gallery.table.rows:
+            _scrollbar_correction = wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X)
+        else:
+            _scrollbar_correction = 0
+        self.SetSizeHints(self.gallery.cols_best_amount * self.item_size + _scrollbar_correction + 2, -1)
+        
+    def __OnToolbarPushed(self, event): 
+        print "Button pushed"            
+        event.Skip()
+                
+    def __MakeControls(self):
+        self.toolbar = menues.MainViewToolbar(self)               
+        self.gallery = GallaryView(self, self.item_size) 
+    
+    def __DoLayout(self):
+        vsizer = wx.BoxSizer(wx.VERTICAL)
+        vsizer.Add(self.toolbar, 0, wx.EXPAND) 
+        vsizer.AddSpacer(3)       
+        vsizer.Add(self.gallery, 1, wx.EXPAND) 
+        self.SetSizer(vsizer)
+        
+    def __EventHandlers(self):
+        self.Bind(wx.EVT_TOOL, self.__OnToolbarPushed)
+        
+class ViewData(gridlib.PyGridTableBase):
+    def __init__(self, item_size):
+        gridlib.PyGridTableBase.__init__(self)       
+       
+        import os        
+        self.data = list()
+        for fn in os.listdir('../design/caps'):
+            path = os.path.join('../design/caps', fn)
+            self.data.append(path)           
+              
+        self.item_size = item_size         
+        self.cols = 0
+        self.rows = 0       
+        
+    def ResetView(self, grid):
+        grid.BeginBatch()        
+        if self.cols > grid.cols_best_amount:
+            msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_COLS_DELETED, grid.cols_best_amount, self.cols - grid.cols_best_amount)
+            self.GetView().ProcessTableMessage(msg)
+        elif self.cols < grid.cols_best_amount:
+            msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_COLS_INSERTED, self.cols, grid.cols_best_amount - self.cols)
+            self.GetView().ProcessTableMessage(msg)            
+        self.cols = grid.cols_best_amount        
+        if self.cols:
+            rows_best_amount = ceil(float(len(self.data)) / self.cols)
+        else:
+            rows_best_amount = 0 
+        if self.rows > rows_best_amount:
+            msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, rows_best_amount, self.rows - rows_best_amount)
+            self.GetView().ProcessTableMessage(msg)
+        elif self.rows < rows_best_amount:
+            msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_INSERTED, self.rows, rows_best_amount - self.rows)
+            self.GetView().ProcessTableMessage(msg) 
+        self.rows = rows_best_amount            
+        grid.EndBatch()                
+        
+        msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        grid.ProcessTableMessage(msg) 
+
+    def GetAttr(self, row, col, kind):
+        attr = gridlib.GridCellAttr() 
+        attr.SetReadOnly(True)
+        return attr
+        
+    def GetNumberRows(self):
+        return self.rows        
+
+    def GetNumberCols(self):
+        return self.cols     
+
+    def IsEmptyCell(self, row, col):
+        return False
+
+    def GetValue(self, row, col):
+        return False
+    
+    def GetRawValue(self, row, col):  
+        return False
+
+    def SetValue(self, row, col, value):
+        return None
+        
+class GallaryView(gridlib.Grid):
+    def __init__(self, parent, item_size):
+        gridlib.Grid.__init__(self, parent, -1, style=wx.SIMPLE_BORDER)    
+
+        self.item_size = item_size
+        self.__Appearance()        
+        self.table = ViewData(item_size)
+        self.SetTable(self.table, True)
+        self.cols_best_amount = 0      
+
+    def __Appearance(self):
+        self.HideRowLabels()
+        self.HideColLabels()          
+        self.SetDefaultEditor(None)        
+        self.DefaultRowSize = self.item_size
+        self.DefaultColSize = self.item_size 
+        self.DisableDragRowSize()
+        self.DisableDragColSize()
+        self.SetDefaultCellBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DFACE))
+        self.ClearBackground()
+        self.DefaultRenderer = ItemPictureRenderer(self.item_size)
+        
+    def Reset(self):
+        self.table.ResetView(self)    
+    
+class ItemPictureRenderer(gridlib.PyGridCellRenderer):
+    def __init__(self, item_size):
+        gridlib.PyGridCellRenderer.__init__(self)
+        
+        self.item_size = item_size                 
+        _sel_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HOTLIGHT) 
+        _sel_color.Set(_sel_color.red, _sel_color.green, _sel_color.blue, 92)
+        self.sel_brush = wx.Brush(_sel_color)
+        self.sel_pen = wx.Pen(_sel_color)        
+        _bg_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DFACE) 
+        self.bg_brush = wx.Brush(_bg_color)
+        self.bg_pen = wx.Pen(_bg_color)
+
+    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
+        data_index = grid.table.cols * row + col
+        if data_index < len(grid.table.data):             
+            bmp = wx.Bitmap(grid.table.data[data_index], wx.BITMAP_TYPE_JPEG)        
+            image = wx.ImageFromBitmap(bmp)
+            image = image.Scale(self.item_size, self.item_size, wx.IMAGE_QUALITY_HIGH)
+            bmp = wx.BitmapFromImage(image)                       
+            dc.DrawBitmap(bmp, rect.x, rect.y)
+            if isSelected:
+                try:
+                    dc = wx.GCDC(dc)
+                except:
+                    pass
+                else:         
+                    dc.SetPen(self.sel_pen)
+                    dc.SetBrush(self.sel_brush)
+                    dc.DrawRectangleRect(rect)
+        else:
+            dc.SetPen(self.bg_pen)
+            dc.SetBrush(self.bg_brush)
+            dc.DrawRectangleRect(rect)
+             
 if __name__ == '__main__':
     class TestApp(wx.App):
         def OnInit(self):

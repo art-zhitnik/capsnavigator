@@ -2,11 +2,15 @@
 
 import wx
 
-from resources import filter_icon
+import resources
 
 _ = wx.GetTranslation
 
 ID_FILTER = 10
+ID_SMALL_VIEW = 11
+ID_MEDIUM_VIEW = 12
+ID_BIG_VIEW = 13
+ID_LIST_VIEW = 14
 
 class MainMenu(wx.MenuBar):
     def __init__(self, parent, *args, **kwargs):
@@ -30,6 +34,21 @@ class MainTreeToolbar(wx.ToolBar):
         super(MainTreeToolbar, self).__init__(parent=parent, style=wx.SIMPLE_BORDER)        
         self.AddStretchableSpace()
         self.SetToolBitmapSize((16, 16))
-        filter_bmp = filter_icon.GetBitmap()
+        filter_bmp = resources.filter_icon.GetBitmap()
         self.AddCheckLabelTool(ID_FILTER, _("Filter"), filter_bmp, filter_bmp, _("Filter"))
-        self.Realize()          
+        self.Realize()
+        
+class MainViewToolbar(wx.ToolBar):
+    def __init__(self, parent):
+        super(MainViewToolbar, self).__init__(parent=parent, style=wx.SIMPLE_BORDER)        
+        self.AddStretchableSpace()
+        self.SetToolBitmapSize((16, 16))
+        bmp = resources.view_small_icon.GetBitmap()
+        self.AddRadioLabelTool(ID_SMALL_VIEW, _("Small pictures gallery view"), bmp, bmp, _("Small pictures gallery view"))
+        bmp = resources.view_medium_icon.GetBitmap()
+        self.AddRadioLabelTool(ID_MEDIUM_VIEW, _("Medium pictures gallery view"), bmp, bmp, _("Medium pictures gallery view"))   
+        bmp = resources.view_big_icon.GetBitmap()
+        self.AddRadioLabelTool(ID_BIG_VIEW, _("Big pictures gallery view"), bmp, bmp, _("Big pictures gallery view"))  
+        bmp = resources.view_list_icon.GetBitmap()
+        self.AddRadioLabelTool(ID_LIST_VIEW, _("List view"), bmp, bmp, _("List view"))                  
+        self.Realize()
