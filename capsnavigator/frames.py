@@ -177,7 +177,7 @@ class ViewPanel(wx.Panel):
             Correct panel width according to appearance of the vertical scroll bar of the gallery.
             Dirty hack, but gallery.HasScrollbar() doesn't work.
         """
-        _galleryrows_forecast = float(self.Parent.ClientSize[1] - self.toolbar.Size[1]) / self.item_size
+        _galleryrows_forecast = float(self.Parent.ClientSize[1] - self.toolbar.Size[1] - 2) / self.item_size
         if _galleryrows_forecast < self.gallery.table.rows:
             _scrollbar_correction = wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X)
         else:
