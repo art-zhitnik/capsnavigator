@@ -164,13 +164,13 @@ class MainTree(HTL.HyperTreeList):
         
 class ViewPanel(wx.Panel):
     def __init__(self, parent, item_size):
-        super(ViewPanel, self).__init__(parent)        
+        super(ViewPanel, self).__init__(parent, style=wx.NO_FULL_REPAINT_ON_RESIZE)        
         
         self.item_size = item_size
                 
         self.__MakeControls()
         self.__DoLayout()
-        self.__EventHandlers()         
+        self.__EventHandlers()  
         
     def WidthCorrection(self):
         """
@@ -182,7 +182,7 @@ class ViewPanel(wx.Panel):
             _scrollbar_correction = wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X)
         else:
             _scrollbar_correction = 0
-        self.SetSizeHints(self.gallery.cols_best_amount * self.item_size + _scrollbar_correction + 2, -1)   
+        self.SetSizeHints(self.gallery.cols_best_amount * self.item_size + _scrollbar_correction + 2, self.Parent.ClientSize[0])   
         
     def __OnToolbarPushed(self, event):
         evt_id = event.GetId()
@@ -270,7 +270,7 @@ class ViewData(gridlib.PyGridTableBase):
         return False
 
     def GetValue(self, row, col):
-        return False
+        return ''
     
     def GetRawValue(self, row, col):  
         return False
@@ -291,7 +291,7 @@ class GallaryView(gridlib.Grid):
     def __Appearance(self):
         self.HideRowLabels()
         self.HideColLabels()          
-        self.SetDefaultEditor(None)        
+        self.SetDefaultEditor(None)
         self.DefaultRowSize = self.item_size
         self.DefaultColSize = self.item_size 
         self.DisableDragRowSize()
