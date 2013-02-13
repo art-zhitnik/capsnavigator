@@ -28,13 +28,15 @@ class MainFrame(PersistentFrame):
     def OnExit(self, event):
         self.Close()
         
-    def __OnResize(self, event):       
+    def __OnResize(self, event):
+        self.view_panel.Freeze()
         width = self.ClientSize[0] - self.navigation.MinWidth 
         newcols = width / self.view_panel.item_size
         if newcols != self.view_panel.gallery.cols_best_amount:
             self.view_panel.gallery.cols_best_amount = newcols
             self.view_panel.gallery.Reset()        
         self.view_panel.WidthCorrection()
+        self.view_panel.Thaw()
         event.Skip()
 
     def OnAbout(self, event):
