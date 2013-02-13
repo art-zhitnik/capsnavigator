@@ -7,6 +7,7 @@ import sys
 from math import ceil
 
 import menues
+import settings
 from preferences.frames import PreferencesDialog
 from lib.ui import PersistentFrame
 
@@ -179,10 +180,24 @@ class ViewPanel(wx.Panel):
             _scrollbar_correction = wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X)
         else:
             _scrollbar_correction = 0
-        self.SetSizeHints(self.gallery.cols_best_amount * self.item_size + _scrollbar_correction + 2, -1)
+        self.SetSizeHints(self.gallery.cols_best_amount * self.item_size + _scrollbar_correction + 2, -1)   
         
-    def __OnToolbarPushed(self, event): 
-        print "Button pushed"            
+    def __OnToolbarPushed(self, event):
+        evt_id = event.GetId()
+        if settings.ITEM_SIZES.has_key(evt_id):
+            self.item_size = settings.ITEM_SIZES[evt_id]           
+            self._vsizer = self.GetSizer()
+            self.Freeze()            
+            self._vsizer.Detach(self.gallery)        
+            self.gallery.Destroy()           
+            del self.gallery                       
+            self.gallery = GallaryView(self, self.item_size)            
+            self._vsizer.Add(self.gallery, 1, wx.EXPAND)                                                
+            self._vsizer.Layout()           
+            self.gallery.Reset() 
+            self.WidthCorrection()
+            self.Parent.Sizer.Layout()           
+            self.Thaw()           
         event.Skip()
                 
     def __MakeControls(self):
@@ -190,11 +205,11 @@ class ViewPanel(wx.Panel):
         self.gallery = GallaryView(self, self.item_size) 
     
     def __DoLayout(self):
-        vsizer = wx.BoxSizer(wx.VERTICAL)
-        vsizer.Add(self.toolbar, 0, wx.EXPAND) 
-        vsizer.AddSpacer(3)       
-        vsizer.Add(self.gallery, 1, wx.EXPAND) 
-        self.SetSizer(vsizer)
+        self._vsizer = wx.BoxSizer(wx.VERTICAL)
+        self._vsizer.Add(self.toolbar, 0, wx.EXPAND) 
+        self._vsizer.AddSpacer(3)       
+        self._vsizer.Add(self.gallery, 1, wx.EXPAND) 
+        self.SetSizer(self._vsizer)
         
     def __EventHandlers(self):
         self.Bind(wx.EVT_TOOL, self.__OnToolbarPushed)
@@ -269,7 +284,7 @@ class GallaryView(gridlib.Grid):
         self.__Appearance()        
         self.table = ViewData(item_size)
         self.SetTable(self.table, True)
-        self.cols_best_amount = 0      
+        self.cols_best_amount = (self.Parent.Parent.ClientSize[0] - self.Parent.Parent.navigation.MinWidth) / item_size
 
     def __Appearance(self):
         self.HideRowLabels()
@@ -284,7 +299,7 @@ class GallaryView(gridlib.Grid):
         self.DefaultRenderer = ItemPictureRenderer(self.item_size)
         
     def Reset(self):
-        self.table.ResetView(self)    
+        self.table.ResetView(self)           
     
 class ItemPictureRenderer(gridlib.PyGridCellRenderer):
     def __init__(self, item_size):
