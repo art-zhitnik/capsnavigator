@@ -81,7 +81,7 @@ class NavigationPanel(wx.Panel):
         self.__EventHandlers()   
         
     def __OnToolbarPushed(self, event): 
-        if event.GetId() == ID_FILTER:                                  
+        if event.GetId() == menues.ID_FILTER:                                  
             panelparent = self.tree.GetParent()
             panelsizer = panelparent.GetSizer()
             panelparent.Freeze()            
