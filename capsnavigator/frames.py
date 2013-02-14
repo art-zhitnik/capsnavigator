@@ -4,6 +4,7 @@ import wx
 import wx.lib.agw.hypertreelist as HTL
 import  wx.grid as gridlib
 import sys
+import os
 from math import ceil
 
 import menues
@@ -125,9 +126,10 @@ class MainTree(HTL.HyperTreeList):
         self.AddColumn("Amount", flag=wx.ALIGN_CENTER)
         self.SetMainColumn(0)
         
+        _program_dir = os.path.split(__file__)[0] 
         il = wx.ImageList(24, 16)
-        il.Add(wx.Bitmap('../design/rus24x16.png', wx.BITMAP_TYPE_PNG))
-        il.Add(wx.Bitmap('../design/ukr24x16.png', wx.BITMAP_TYPE_PNG))
+        il.Add(wx.Bitmap(os.path.join(_program_dir, '../design/rus24x16.png'), wx.BITMAP_TYPE_PNG))
+        il.Add(wx.Bitmap(os.path.join(_program_dir, '../design/ukr24x16.png'), wx.BITMAP_TYPE_PNG))
         self.AssignImageList(il)        
         
         self.root = self.AddRoot("Root")        
@@ -219,11 +221,11 @@ class ViewPanel(wx.Panel):
 class ViewData(gridlib.PyGridTableBase):
     def __init__(self, item_size):
         gridlib.PyGridTableBase.__init__(self)       
-       
-        import os        
+            
+        _program_dir = os.path.split(__file__)[0] 
         self.data = list()
-        for fn in os.listdir('../design/caps'):
-            path = os.path.join('../design/caps', fn)
+        for fn in os.listdir(os.path.join(_program_dir, '../design/caps')):
+            path = os.path.join(_program_dir, '../design/caps', fn)
             self.data.append(path)           
               
         self.item_size = item_size         
