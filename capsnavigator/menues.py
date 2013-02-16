@@ -11,6 +11,7 @@ ID_SMALL_VIEW = 11
 ID_MEDIUM_VIEW = 12
 ID_BIG_VIEW = 13
 ID_LIST_VIEW = 14
+GALLERIES = (ID_SMALL_VIEW, ID_MEDIUM_VIEW, ID_BIG_VIEW)
 
 class MainMenu(wx.MenuBar):
     def __init__(self, parent, *args, **kwargs):

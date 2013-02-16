@@ -2,7 +2,8 @@
 
 import wx
 import wx.lib.agw.hypertreelist as HTL
-import  wx.grid as gridlib
+import wx.lib.mixins.listctrl as listmix
+import wx.grid as gridlib
 import sys
 import os
 from math import ceil
@@ -11,6 +12,7 @@ import menues
 import settings
 from preferences.frames import PreferencesDialog
 from lib.ui import PersistentFrame
+import resources
 
 _ = wx.GetTranslation
 
@@ -30,14 +32,18 @@ class MainFrame(PersistentFrame):
         self.Close()
         
     def __OnResize(self, event):
-        self.view_panel.Freeze()
-        width = self.ClientSize[0] - self.navigation.MinWidth 
-        newcols = width / self.view_panel.item_size
-        if newcols != self.view_panel.gallery.cols_best_amount:
-            self.view_panel.gallery.cols_best_amount = newcols
-            self.view_panel.gallery.Reset()        
-        self.view_panel.WidthCorrection()
-        self.view_panel.Thaw()
+        if self.view_panel.mode in menues.GALLERIES:
+            self.view_panel.Freeze()
+            width = self.ClientSize[0] - self.navigation.MinWidth 
+            newcols = width / self.view_panel.item_size
+            if newcols != self.view_panel.gallery.cols_best_amount:
+                self.view_panel.gallery.cols_best_amount = newcols
+                self.view_panel.gallery.Reset()        
+            self.view_panel.WidthCorrection()
+            self.view_panel.Thaw()
+        else:
+            width = self.ClientSize[0] - self.navigation.MinWidth 
+            self.view_panel.SetSizeHints(width, self.ClientSize[1])
         event.Skip()
 
     def OnAbout(self, event):
@@ -168,6 +174,7 @@ class ViewPanel(wx.Panel):
     def __init__(self, parent, item_size):
         super(ViewPanel, self).__init__(parent, style=wx.NO_FULL_REPAINT_ON_RESIZE)        
         
+        self.mode = menues.ID_SMALL_VIEW
         self.item_size = item_size
                 
         self.__MakeControls()
@@ -188,20 +195,30 @@ class ViewPanel(wx.Panel):
         
     def __OnToolbarPushed(self, event):
         evt_id = event.GetId()
-        if settings.ITEM_SIZES.has_key(evt_id):
-            self.item_size = settings.ITEM_SIZES[evt_id]           
-            self._vsizer = self.GetSizer()
-            self.Freeze()            
+        self.Freeze()
+        self._vsizer = self.GetSizer()
+        if self.mode in menues.GALLERIES:
             self._vsizer.Detach(self.gallery)        
             self.gallery.Destroy()           
-            del self.gallery                       
+            del self.gallery
+        elif self.mode == menues.ID_LIST_VIEW:
+            self._vsizer.Detach(self.list_view)        
+            self.list_view.Destroy()           
+            del self.list_view  
+        self.mode = evt_id
+        if settings.ITEM_SIZES.has_key(evt_id):            
+            self.item_size = settings.ITEM_SIZES[evt_id]
             self.gallery = GallaryView(self, self.item_size)            
             self._vsizer.Add(self.gallery, 1, wx.EXPAND)                                                
             self._vsizer.Layout()           
             self.gallery.Reset() 
             self.WidthCorrection()
-            self.Parent.Sizer.Layout()           
-            self.Thaw()           
+        elif evt_id == menues.ID_LIST_VIEW:
+            self.list_view = ListView(self)
+            self._vsizer.Add(self.list_view, 1, wx.EXPAND)                                                
+            self._vsizer.Layout()           
+        self.Parent.Sizer.Layout()           
+        self.Thaw()
         event.Skip()
                 
     def __MakeControls(self):
@@ -339,6 +356,61 @@ class ItemPictureRenderer(gridlib.PyGridCellRenderer):
             dc.SetPen(self.bg_pen)
             dc.SetBrush(self.bg_brush)
             dc.DrawRectangleRect(rect)
+            
+class ListViewCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
+    def __init__(self, parent, ID, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
+        wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
+        listmix.ListCtrlAutoWidthMixin.__init__(self)
+        
+class ListView(wx.Panel, listmix.ColumnSorterMixin):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent, -1, style=wx.WANTS_CHARS)
+        
+        self.il = wx.ImageList(16, 16)        
+        self.up = self.il.Add(resources.filter_up.GetBitmap())
+        self.dn = self.il.Add(resources.filter_down.GetBitmap())
+        self.list = ListViewCtrl(self, -1, style=wx.LC_REPORT | wx.SIMPLE_BORDER | wx.LC_EDIT_LABELS | wx.LC_SORT_ASCENDING)
+        self.list.SetImageList(self.il, wx.IMAGE_LIST_SMALL)
+        
+        i = 0
+        _program_dir = os.path.split(__file__)[0] 
+        self.itemDataMap = {}
+        for fn in os.listdir(os.path.join(_program_dir, '../design/caps')):            
+            self.itemDataMap[i] = (fn, "Line {0}".format(i+1))
+            i += 1            
+        self.PopulateList()
+            
+        listmix.ColumnSorterMixin.__init__(self, 3)
+        self.__DoLayout()
+
+    def __DoLayout(self):
+        sizer = wx.BoxSizer(wx.VERTICAL) 
+        sizer.Add(self.list, 1, wx.EXPAND)
+        self.SetSizer(sizer)        
+        self.SetAutoLayout(True)
+
+    def PopulateList(self):
+        info = wx.ListItem()
+        info.m_mask = wx.LIST_MASK_TEXT | wx.LIST_MASK_IMAGE | wx.LIST_MASK_FORMAT
+        info.m_image = -1
+        info.m_format = 0
+        info.m_text = "File name"
+        self.list.InsertColumnInfo(0, info)
+        info.m_text = "Column 2"
+        self.list.InsertColumnInfo(1, info) 
+        for k, v in self.itemDataMap.items():
+            index = self.list.InsertStringItem(sys.maxint, v[0])
+            self.list.SetStringItem(index, 1, v[1])
+            self.list.SetItemData(index, k)
+        self.list.SetColumnWidth(0, 100)
+        self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)        
+        self.currentItem = 0
+        
+    def GetListCtrl(self):
+        return self.list
+
+    def GetSortImages(self):
+        return (self.dn, self.up)
              
 if __name__ == '__main__':
     class TestApp(wx.App):
