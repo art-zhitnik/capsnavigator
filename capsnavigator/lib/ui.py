@@ -17,9 +17,7 @@ class PersistentFrame(wx.Frame):
         if not self.config.has_key('frames'):
             self.config['frames'] = {}
         wx.CallAfter(self.RestoreState)
-        self.Bind(wx.EVT_CLOSE, self.__OnClose)
-        self.Bind(wx.EVT_SIZE, self._OnResize)
-        self.Bind(wx.EVT_MOVE, self._OnMove)
+        self.__EventHandlers()
         
     def __OnClose(self, event):
         maximized = self.IsMaximized()       
@@ -32,12 +30,12 @@ class PersistentFrame(wx.Frame):
             print "Can't save config!"
         event.Skip()
         
-    def _OnResize(self, event):
+    def __OnResize(self, event):
         if hasattr(self, 'actual_size') and not self.IsMaximized():
             self.actual_size = self.GetSize().Get()
         event.Skip()
         
-    def _OnMove(self, event):
+    def __OnMove(self, event):
         if hasattr(self, 'actual_position') and not self.IsMaximized():
             self.actual_position = self.GetPosition().Get()
         event.Skip()
@@ -55,3 +53,8 @@ class PersistentFrame(wx.Frame):
         self.SetSize(self.actual_size)
         if maximized:
             self.Maximize() 
+            
+    def __EventHandlers(self):
+        self.Bind(wx.EVT_CLOSE, self.__OnClose)
+        self.Bind(wx.EVT_SIZE, self.__OnResize)
+        self.Bind(wx.EVT_MOVE, self.__OnMove)     
