@@ -6,6 +6,7 @@ import wx.lib.mixins.listctrl as listmix
 import wx.grid as gridlib
 import sys
 import os
+import configobj
 from math import ceil
 
 import menues
@@ -22,7 +23,7 @@ class MainFrame(PersistentFrame):
         
         self.SetMinSize((800, 600))
         self.navigation = NavigationPanel(self)
-        self.view_panel = ViewPanel(self, 100)        
+        self.view_panel = ViewPanel(self)
         menues.MainMenu(self)
 
         self.__DoLayout()
@@ -68,11 +69,16 @@ class MainFrame(PersistentFrame):
         preferences.CenterOnParent() 
         preferences.ShowModal() 
         
+    def __OnClose(self, event):
+        self.config['frames']['mainframe_view_mode'] = self.view_panel.mode        
+        event.Skip()
+        
     def __EventHandlers(self):
         self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
         self.Bind(wx.EVT_MENU, self.OnPreferences, id=wx.ID_PREFERENCES)  
         self.Bind(wx.EVT_MENU, self.OnAbout, id=wx.ID_ABOUT) 
         self.Bind(wx.EVT_SIZE, self.__OnResize)
+        self.Bind(wx.EVT_CLOSE, self.__OnClose)    
         
     def __DoLayout(self):
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -171,11 +177,12 @@ class MainTree(HTL.HyperTreeList):
         self.Bind(wx.EVT_SIZE, self.__OnResize)
         
 class ViewPanel(wx.Panel):
-    def __init__(self, parent, item_size):
+    def __init__(self, parent):
         super(ViewPanel, self).__init__(parent, style=wx.NO_FULL_REPAINT_ON_RESIZE)        
         
-        self.mode = menues.ID_SMALL_VIEW
-        self.item_size = item_size
+        config_path = wx.StandardPaths_Get().GetUserDataDir()
+        self.mode = int(parent.config['frames'].get('mainframe_view_mode', menues.ID_SMALL_VIEW))
+        self.item_size = settings.ITEM_SIZES.get(self.mode, 0)
                 
         self.__MakeControls()
         self.__DoLayout()
@@ -222,18 +229,22 @@ class ViewPanel(wx.Panel):
         event.Skip()
                 
     def __MakeControls(self):
-        self.toolbar = menues.MainViewToolbar(self)               
-        self.gallery = GallaryView(self, self.item_size) 
+        self.toolbar = menues.MainViewToolbar(self, self.mode)
+        if self.mode in menues.GALLERIES:
+            self.gallery = GallaryView(self, self.item_size)
+        else:
+            self.list_view = ListView(self) 
     
     def __DoLayout(self):
         self._vsizer = wx.BoxSizer(wx.VERTICAL)
         self._vsizer.Add(self.toolbar, 0, wx.EXPAND) 
-        self._vsizer.AddSpacer(3)       
-        self._vsizer.Add(self.gallery, 1, wx.EXPAND) 
+        self._vsizer.AddSpacer(3) 
+        _current_view_control = hasattr(self, 'gallery') and self.gallery or self.list_view       
+        self._vsizer.Add(_current_view_control, 1, wx.EXPAND) 
         self.SetSizer(self._vsizer)
         
     def __EventHandlers(self):
-        self.Bind(wx.EVT_TOOL, self.__OnToolbarPushed)
+        self.Bind(wx.EVT_TOOL, self.__OnToolbarPushed)        
         
 class ViewData(gridlib.PyGridTableBase):
     def __init__(self, item_size):

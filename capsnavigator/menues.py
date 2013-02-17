@@ -40,7 +40,7 @@ class MainTreeToolbar(wx.ToolBar):
         self.Realize()
         
 class MainViewToolbar(wx.ToolBar):
-    def __init__(self, parent):
+    def __init__(self, parent, mode):
         super(MainViewToolbar, self).__init__(parent=parent, style=wx.SIMPLE_BORDER)        
         self.AddStretchableSpace()
         self.SetToolBitmapSize((16, 16))
@@ -51,5 +51,6 @@ class MainViewToolbar(wx.ToolBar):
         bmp = resources.view_big_icon.GetBitmap()
         self.AddRadioLabelTool(ID_BIG_VIEW, _("Big pictures gallery view"), bmp, bmp, _("Big pictures gallery view"))  
         bmp = resources.view_list_icon.GetBitmap()
-        self.AddRadioLabelTool(ID_LIST_VIEW, _("List view"), bmp, bmp, _("List view"))                  
+        self.AddRadioLabelTool(ID_LIST_VIEW, _("List view"), bmp, bmp, _("List view"))   
+        self.ToggleTool(mode, True)
         self.Realize()

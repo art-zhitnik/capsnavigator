@@ -13,16 +13,16 @@ class PersistentFrame(wx.Frame):
     def __init__(self, *args, **kwargs):
         wx.Frame.__init__(self, *args, **kwargs) 
         config_path = wx.StandardPaths_Get().GetUserDataDir()
-        self.config = configobj.ConfigObj(os.path.join(config_path, 'config.ini'))     
-        wx.CallAfter(self.RestoreState)
-        self.Bind(wx.EVT_CLOSE, self._OnClose)
-        self.Bind(wx.EVT_SIZE, self._OnResize)
-        self.Bind(wx.EVT_MOVE_END, self._OnMove)
-        
-    def _OnClose(self, event):
-        maximized = self.IsMaximized()       
+        self.config = configobj.ConfigObj(os.path.join(config_path, 'config.ini'))
         if not self.config.has_key('frames'):
             self.config['frames'] = {}
+        wx.CallAfter(self.RestoreState)
+        self.Bind(wx.EVT_CLOSE, self.__OnClose)
+        self.Bind(wx.EVT_SIZE, self._OnResize)
+        self.Bind(wx.EVT_MOVE, self._OnMove)
+        
+    def __OnClose(self, event):
+        maximized = self.IsMaximized()       
         self.config['frames']['{0}_pos'.format(self.Name.lower())] = repr(self.actual_position)
         self.config['frames']['{0}_size'.format(self.Name.lower())] = repr(self.actual_size)
         self.config['frames']['{0}_maximized'.format(self.Name.lower())] = repr(maximized)
