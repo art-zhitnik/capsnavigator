@@ -317,6 +317,7 @@ class GallaryView(gridlib.Grid):
         self.table = ViewData(item_size)
         self.SetTable(self.table, True)
         self.cols_best_amount = (self.Parent.Parent.ClientSize[0] - self.Parent.Parent.navigation.MinWidth) / item_size
+        self.Reset()  
 
     def __Appearance(self):
         self.HideRowLabels()
