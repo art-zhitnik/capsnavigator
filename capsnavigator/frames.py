@@ -198,7 +198,7 @@ class ViewPanel(wx.Panel):
             _scrollbar_correction = wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X)
         else:
             _scrollbar_correction = 0
-        self.SetSizeHints(self.gallery.cols_best_amount * self.item_size + _scrollbar_correction + 3, self.Parent.ClientSize[0])   
+        self.SetSizeHints(self.gallery.cols_best_amount * self.item_size + _scrollbar_correction + 3, self.Parent.ClientSize[1])   
         
     def __OnToolbarPushed(self, event):
         evt_id = event.GetId()
