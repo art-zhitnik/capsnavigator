@@ -378,7 +378,8 @@ class ListView(wx.Panel, listmix.ColumnSorterMixin):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent, -1, style=wx.WANTS_CHARS)
         
-        self.il = wx.ImageList(16, 16)        
+        self.il = wx.ImageList(16, 16)
+        self.il.Add(resources.empty_icon.GetBitmap())
         self.up = self.il.Add(resources.filter_up.GetBitmap())
         self.dn = self.il.Add(resources.filter_down.GetBitmap())
         self.list = ListViewCtrl(self, -1, style=wx.LC_REPORT | wx.SIMPLE_BORDER | wx.LC_EDIT_LABELS | wx.LC_SORT_ASCENDING)

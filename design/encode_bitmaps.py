@@ -8,7 +8,7 @@ import sys
 from wx.tools import img2py
 
 command_lines = [
-    "-a -F -c icons/filter_up.png images.py",
+    "-a -F -c icons/empty.png images.py",
     ]
 
 if __name__ == "__main__":
